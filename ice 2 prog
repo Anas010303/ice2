@@ -1,0 +1,112 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace TaskManagementApp
+{
+    public partial class MainForm : Form
+    {
+        // Create a list to store tasks
+        private List<Task> tasks = new List<Task>();
+
+        public MainForm()
+        {
+            InitializeComponent();
+            InitializeDataGridView();
+        }
+
+        private void InitializeDataGridView()
+        {
+            // Set up DataGridView columns
+            dataGridView.Columns.Add("TaskTitle", "Task Title");
+            dataGridView.Columns.Add("DueDate", "Due Date");
+            dataGridView.Columns.Add("Status", "Status");
+            dataGridView.Columns["DueDate"].DefaultCellStyle.Format = "yyyy-MM-dd";
+
+            // Set DataGridView data source to the tasks list
+            dataGridView.DataSource = tasks;
+
+            // Hide unnecessary columns (TaskId)
+            dataGridView.Columns["TaskId"].Visible = false;
+
+            // Enable DataGridView selection
+            dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        }
+
+        // Define a Task class to represent tasks
+        private class Task
+        {
+            public int TaskId { get; set; }
+            public string TaskTitle { get; set; }
+            public DateTime DueDate { get; set; }
+            public bool Status { get; set; } // True for completed, false for pending
+        }
+
+        // Additional methods
+        private void FilterTasksByStatus(bool completed)
+        {
+            var filteredTasks = tasks.Where(t => t.Status == completed).ToList();
+            dataGridView.DataSource = filteredTasks;
+        }
+
+        private void SortTasksByDueDate()
+        {
+            tasks = tasks.OrderBy(t => t.DueDate).ToList();
+            dataGridView.DataSource = tasks;
+        }
+
+        private void AddTask(string title, DateTime dueDate, bool status)
+        {
+            var task = new Task
+            {
+                TaskId = tasks.Count + 1,
+                TaskTitle = title,
+                DueDate = dueDate,
+                Status = status
+            };
+            tasks.Add(task);
+            dataGridView.DataSource = tasks;
+        }
+
+        private void FilterTasksByKeyword(string keyword)
+        {
+            var filteredTasks = tasks.Where(t => t.TaskTitle.Contains(keyword)).ToList();
+            dataGridView.DataSource = filteredTasks;
+        }
+
+        private void FilterTasksByDateRange(DateTime startDate, DateTime endDate)
+        {
+            var filteredTasks = tasks.Where(t => t.DueDate >= startDate && t.DueDate <= endDate).ToList();
+            dataGridView.DataSource = filteredTasks;
+        }
+
+        private void DisplayTaskCounts()
+        {
+            int pendingCount = tasks.Count(t => !t.Status);
+            int completedCount = tasks.Count(t => t.Status);
+            MessageBox.Show($"Pending Tasks: {pendingCount}\nCompleted Tasks: {completedCount}");
+        }
+
+        private void GroupTasksByStatus()
+        {
+            var groupedTasks = tasks.GroupBy(t => t.Status).ToDictionary(g => g.Key, g => g.ToList());
+            // Now you can work with the groupedTasks dictionary to display or process the grouped data.
+        }
+
+        private void InitializeDataGridView()
+        {
+            // ... (existing code)
+
+            // Hide all columns initially
+            foreach (DataGridViewColumn column in dataGridView.Columns)
+            {
+                column.Visible = false;
+            }
+
+            // Show only TaskTitle and Status columns
+            dataGridView.Columns["TaskTitle"].Visible = true;
+            dataGridView.Columns["Status"].Visible = true;
+        }
+    }
+}
